@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  DEPT_ADMIN
+  FACULTY
+  STUDENT
+}
+
+enum DocumentStatus {
+  PROCESSING
+  PUBLISHED
+  SUPERSEDED
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  users     User[]
+  documents Document[]
+  notices   Notice[]
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role
+  semester     Int?
+  createdAt    DateTime   @default(now())
+
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+
+  documents    Document[]
+  reports      ContentReport[]
+  auditLogs    AuditLog[]
+
+  @@index([role])
+  @@index([departmentId])
+}
+
+model Document {
+  id        String         @id @default(cuid())
+  title     String
+  category  String
+  fileUrl   String
+  fileName  String?
+  pageCount Int            @default(0)
+  chunkCount Int           @default(0)
+  semester  Int?
+  version   Int            @default(1)
+  status    DocumentStatus @default(PROCESSING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+
+  uploadedBy      User   @relation(fields: [uploadedByUserId], references: [id])
+  uploadedByUserId String
+
+  reports ContentReport[]
+
+  @@index([title])
+  @@index([departmentId, semester])
+  @@index([status])
+}
+
+model Notice {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  semester  Int?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+
+  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String?
+
+  @@index([departmentId, expiresAt])
+}
+
+model ContentReport {
+  id         String       @id @default(cuid())
+  query      String
+  answer     String?
+  reason     String
+  detail     String?
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  resolvedAt DateTime?
+
+  document   Document? @relation(fields: [documentId], references: [id])
+  documentId String?
+
+  student    User @relation(fields: [studentId], references: [id])
+  studentId  String
+
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json
+  timestamp  DateTime @default(now())
+
+  actor   User   @relation(fields: [actorId], references: [id])
+  actorId String
+
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}
