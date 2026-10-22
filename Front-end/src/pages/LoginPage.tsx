@@ -7,18 +7,23 @@ interface DemoAccount {
   label: string;
   email: string;
   hint: string;
+  password: string;
 }
+
+const DEMO_PASSWORD = 'CampusDemo2026!';
 
 const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     label: 'Demo Admin',
     email: 'cse_admin@campus.edu',
     hint: 'Department admin, CSE',
+    password: DEMO_PASSWORD,
   },
   {
     label: 'Demo Student',
     email: 'student@campus.edu',
     hint: 'Student, CSE semester 5',
+    password: DEMO_PASSWORD,
   },
 ];
 
@@ -39,7 +44,7 @@ export default function LoginPage() {
 
   const applyDemo = (account: DemoAccount) => {
     setEmail(account.email);
-    setPassword('');
+    setPassword(account.password);
     setError(null);
   };
 
@@ -112,27 +117,28 @@ export default function LoginPage() {
               opens after sign in.
             </p>
 
-            {/* Demo account shortcuts */}
-            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                Quick demo fill
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {DEMO_ACCOUNTS.map((account) => (
-                  <button
-                    key={account.label}
-                    type="button"
-                    onClick={() => applyDemo(account)}
-                    className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-emerald-500 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-                  >
-                    {account.label}
-                  </button>
-                ))}
+            {import.meta.env.DEV && (
+              <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                  Quick demo fill
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {DEMO_ACCOUNTS.map((account) => (
+                    <button
+                      key={account.label}
+                      type="button"
+                      onClick={() => applyDemo(account)}
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-emerald-500 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    >
+                      {account.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-slate-500">
+                  {DEMO_ACCOUNTS.map((account) => account.hint).join(' · ')}
+                </p>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
-                {DEMO_ACCOUNTS.map((account) => account.hint).join(' · ')}
-              </p>
-            </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>

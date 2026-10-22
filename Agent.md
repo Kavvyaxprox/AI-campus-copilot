@@ -150,7 +150,7 @@ Migration: single `20261022115506_init` (SQLite). FKs: SET NULL for department l
 
 ### 4.4 Pages
 
-- **`LoginPage`** — split-screen; demo quick-fill chips; redirect to `homePath`; show/hide password.
+- **`LoginPage`** — split-screen; development-only demo quick-fill chips (password `CampusDemo2026!`); redirect to `homePath`; show/hide password.
 - **`StudentPortal`** (~820 lines) — profile/settings dropdown; notices sidebar (`GET /api/notices`); chat (`POST /api/chat` with `{ message, history }`, Enter sends / Shift+Enter newline, pending "Retrieving approved sources" bubble, citation chips `[n] Title Page x`); "Report incorrect information" modal → `POST /api/reports`; local Q&A history in `localStorage` (`campus-copilot.qa-history`, max 100).
 - **`AdminPortal`** (~670 lines) — summary cards; *Documents* tab: upload form (title, category from fixed `CATEGORIES`: Examination, Academic Regulation, Timetable, Syllabus, Notice Circular, Placement, Laboratory, Administration; scope `institution`|dept, semester, version, PDF) + table with status/supersede chips; *Knowledge Dispute Desk* tab: open reports, Resolve (canned note) and Replace document (pre-fills next version). DEPT_ADMIN scope locked; FACULTY read-only.
 - **`PrivacyPolicy`** / **`TermsAndConditions`** — static content via `components/LegalLayout.tsx`.
@@ -201,4 +201,4 @@ npm run lint && npm run typecheck
 npx tsx Backend/probe-filter.ts
 ```
 
-Note: full function requires `JWT_SECRET`, `DATABASE_URL` (SQLite `file:./dev.db`), seed passwords in `Backend/.env`, and a running local Qdrant instance (`QDRANT_URL`). `OPENAI_API_KEY` is required for ingest/chat (503 otherwise). Everything else — database, uploaded files — is stored locally.
+Note: full function requires `JWT_SECRET`, `DATABASE_URL` (SQLite `file:./dev.db`), seed passwords in `Backend/.env`, and a running local Qdrant instance (`QDRANT_URL`). In development, the seeded demo admin and student use `CampusDemo2026!`; production seeds require their configured passwords. `OPENAI_API_KEY` is required for ingest/chat (503 otherwise). Everything else — database, uploaded files — is stored locally.

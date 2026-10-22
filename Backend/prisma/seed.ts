@@ -8,6 +8,7 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 const BCRYPT_ROUNDS = 10;
+const DEMO_PASSWORD = 'CampusDemo2026!';
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -15,6 +16,10 @@ function requiredEnv(name: string): string {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
+}
+
+function demoPassword(envName: string): string {
+  return process.env.NODE_ENV === 'production' ? requiredEnv(envName) : DEMO_PASSWORD;
 }
 
 function line(char = '-') {
@@ -68,7 +73,7 @@ async function main() {
       label: 'Department Admin (CSE)',
       name: 'CSE Department Admin',
       email: 'cse_admin@campus.edu',
-      password: requiredEnv('SEED_DEPT_ADMIN_PASSWORD'),
+      password: demoPassword('SEED_DEPT_ADMIN_PASSWORD'),
       role: 'DEPT_ADMIN',
       departmentId: cse.id,
       semester: null,
@@ -77,7 +82,7 @@ async function main() {
       label: 'Student (CSE, Semester 5)',
       name: 'Aarav Sharma',
       email: 'student@campus.edu',
-      password: requiredEnv('SEED_STUDENT_PASSWORD'),
+      password: demoPassword('SEED_STUDENT_PASSWORD'),
       role: 'STUDENT',
       departmentId: cse.id,
       semester: 5,
