@@ -1,8 +1,10 @@
-import type { Role, User } from '@prisma/client';
 import type { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { forbidden, unauthorized } from '../lib/http';
+
+// SQLite via Prisma has no native enums; roles are plain strings validated here.
+export type Role = 'SUPER_ADMIN' | 'DEPT_ADMIN' | 'FACULTY' | 'STUDENT';
 
 export interface AuthClaims {
   id: string;
@@ -33,11 +35,17 @@ export function signToken(claims: AuthClaims): string {
   });
 }
 
-export function toClaims(user: User): AuthClaims {
+export function toClaims(user: {
+  id: string;
+  email: string;
+  role: string;
+  departmentId: string | null;
+  semester: number | null;
+}): AuthClaims {
   return {
     id: user.id,
     email: user.email,
-    role: user.role,
+    role: user.role as Role,
     departmentId: user.departmentId,
     semester: user.semester,
   };

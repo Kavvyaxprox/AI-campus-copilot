@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 
@@ -51,7 +51,7 @@ async function main() {
     name: string;
     email: string;
     password: string;
-    role: Role;
+    role: string;
     departmentId: string | null;
     semester: number | null;
   }> = [
@@ -60,7 +60,7 @@ async function main() {
       name: 'Campus Super Admin',
       email: 'admin@campus.edu',
       password: requiredEnv('SEED_SUPER_ADMIN_PASSWORD'),
-      role: Role.SUPER_ADMIN,
+      role: 'SUPER_ADMIN',
       departmentId: null,
       semester: null,
     },
@@ -69,7 +69,7 @@ async function main() {
       name: 'CSE Department Admin',
       email: 'cse_admin@campus.edu',
       password: requiredEnv('SEED_DEPT_ADMIN_PASSWORD'),
-      role: Role.DEPT_ADMIN,
+      role: 'DEPT_ADMIN',
       departmentId: cse.id,
       semester: null,
     },
@@ -78,7 +78,7 @@ async function main() {
       name: 'Aarav Sharma',
       email: 'student@campus.edu',
       password: requiredEnv('SEED_STUDENT_PASSWORD'),
-      role: Role.STUDENT,
+      role: 'STUDENT',
       departmentId: cse.id,
       semester: 5,
     },

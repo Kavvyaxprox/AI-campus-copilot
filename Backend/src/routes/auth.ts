@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import { Router } from 'express';
-import type { User } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { asyncHandler, badRequest, unauthorized } from '../lib/http';
 import { authenticate, signToken, toClaims } from '../middleware/auth';
@@ -17,14 +16,23 @@ export interface PublicProfile {
   homePath: string;
 }
 
-type UserWithDepartment = User & { department: { code: string; name: string } | null };
+interface DbUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: string;
+  semester: number | null;
+  departmentId: string | null;
+  department: { code: string; name: string } | null;
+}
 
-export function homePathForRole(role: User['role']): string {
+export function homePathForRole(role: string): string {
   if (role === 'STUDENT') return '/student';
   return '/admin';
 }
 
-export function toPublicProfile(user: UserWithDepartment): PublicProfile {
+export function toPublicProfile(user: DbUser): PublicProfile {
   return {
     id: user.id,
     name: user.name,
@@ -57,7 +65,7 @@ authRouter.post(
     const user = (await prisma.user.findUnique({
       where: { email },
       include: { department: true },
-    })) as UserWithDepartment | null;
+    })) as DbUser | null;
 
     // Constant-ish response so the endpoint cannot be used to enumerate accounts.
     const valid = user
@@ -89,7 +97,7 @@ authRouter.get(
     const user = (await prisma.user.findUnique({
       where: { id: claims.id },
       include: { department: true },
-    })) as UserWithDepartment | null;
+    })) as DbUser | null;
 
     if (!user) throw unauthorized('Account no longer exists.');
 

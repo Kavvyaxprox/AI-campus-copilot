@@ -2,7 +2,7 @@
   "name": "ai-campus-copilot-api",
   "version": "1.0.0",
   "private": true,
-  "description": "AI Campus Copilot backend: Express + Prisma + Qdrant RAG API with RBAC",
+  "description": "AI Campus Copilot backend: Express + Prisma (SQLite) + local file storage + Qdrant RAG API with RBAC",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

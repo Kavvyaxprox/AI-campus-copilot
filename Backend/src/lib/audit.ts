@@ -1,4 +1,3 @@
-import type { Prisma } from '@prisma/client';
 import { prisma } from './prisma';
 
 export interface AuditEntry {
@@ -6,7 +5,7 @@ export interface AuditEntry {
   action: string;
   entityType: string;
   entityId: string;
-  metadata?: Prisma.InputJsonValue;
+  metadata?: Record<string, unknown>;
 }
 
 export async function writeAudit(entry: AuditEntry): Promise<void> {
@@ -16,7 +15,8 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
       action: entry.action,
       entityType: entry.entityType,
       entityId: entry.entityId,
-      metadata: entry.metadata ?? {},
+      // SQLite has no native Json column type; metadata is stored as a JSON string.
+      metadata: JSON.stringify(entry.metadata ?? {}),
     },
   });
 }

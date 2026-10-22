@@ -3,13 +3,12 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import multer from 'multer';
-import type { Role } from '@prisma/client';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
 import { writeAudit } from '../lib/audit';
 import { extractPdfPages } from '../lib/pdf';
 import { asyncHandler, badRequest, forbidden, notFound } from '../lib/http';
-import { requireClaims, requireRole } from '../middleware/auth';
+import { requireClaims, requireRole, type Role } from '../middleware/auth';
 import { ingestDocument } from '../services/ingest';
 import { markPayloadByDocument } from '../lib/qdrant';
 
@@ -59,16 +58,19 @@ async function findFamily(
   semester: number | null,
   excludeId?: string,
 ) {
-  return prisma.document.findMany({
+  // SQLite has no case-insensitive comparison (`mode: 'insensitive'` is
+  // PostgreSQL-only), so matching on the title is done in JavaScript.
+  const candidates = await prisma.document.findMany({
     where: {
       ...(excludeId ? { id: { not: excludeId } } : {}),
-      title: { equals: title, mode: 'insensitive' },
       departmentId: { equals: departmentId },
       semester: { equals: semester },
     },
     select: { id: true, title: true, version: true, status: true, semester: true },
     orderBy: { version: 'asc' },
   });
+  const normalized = title.toLowerCase();
+  return candidates.filter((doc) => doc.title.toLowerCase() === normalized);
 }
 
 documentsRouter.post(

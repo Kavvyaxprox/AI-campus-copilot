@@ -1,30 +1,16 @@
+// SQLite data source. See "File path resolution" in the Prisma SQLite docs:
+// the `file:` URL is resolved relative to this schema file.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  SUPER_ADMIN
-  DEPT_ADMIN
-  FACULTY
-  STUDENT
-}
-
-enum DocumentStatus {
-  PROCESSING
-  PUBLISHED
-  SUPERSEDED
-}
-
-enum ReportStatus {
-  OPEN
-  RESOLVED
-}
-
+// SQLite via Prisma does not support native enums; role and status values are
+// stored as plain strings and validated at the application layer.
 model Department {
   id        String   @id @default(cuid())
   name      String
@@ -41,7 +27,7 @@ model User {
   name         String
   email        String     @unique
   passwordHash String
-  role         Role
+  role         String // SUPER_ADMIN | DEPT_ADMIN | FACULTY | STUDENT
   semester     Int?
   createdAt    DateTime   @default(now())
 
@@ -57,18 +43,18 @@ model User {
 }
 
 model Document {
-  id        String         @id @default(cuid())
+  id        String   @id @default(cuid())
   title     String
   category  String
   fileUrl   String
   fileName  String?
-  pageCount Int            @default(0)
-  chunkCount Int           @default(0)
+  pageCount Int      @default(0)
+  chunkCount Int     @default(0)
   semester  Int?
-  version   Int            @default(1)
-  status    DocumentStatus @default(PROCESSING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  version   Int      @default(1)
+  status    String   @default("PROCESSING") // PROCESSING | PUBLISHED | SUPERSEDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
@@ -98,13 +84,13 @@ model Notice {
 }
 
 model ContentReport {
-  id         String       @id @default(cuid())
+  id         String    @id @default(cuid())
   query      String
   answer     String?
   reason     String
   detail     String?
-  status     ReportStatus @default(OPEN)
-  createdAt  DateTime     @default(now())
+  status     String    @default("OPEN") // OPEN | RESOLVED
+  createdAt  DateTime  @default(now())
   resolvedAt DateTime?
 
   document   Document? @relation(fields: [documentId], references: [id])
@@ -121,7 +107,8 @@ model AuditLog {
   action     String
   entityType String
   entityId   String
-  metadata   Json
+  // SQLite has no native Json column type; metadata is stored as a JSON string.
+  metadata   String
   timestamp  DateTime @default(now())
 
   actor   User   @relation(fields: [actorId], references: [id])
