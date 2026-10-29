@@ -5,15 +5,16 @@ const API_PORT = 4000;
 /**
  * API origin:
  *   1. VITE_API_URL when it is explicitly set.
- *   2. Otherwise the same host as this page on port 4000, so the app works
- *      from localhost, 127.0.0.1 or a LAN address without reconfiguration.
+ *   2. In production, the same origin (Vercel routes /api to the backend).
+ *   3. In development, the same host as this page on port 4000.
  */
 function resolveApiBase(): string {
   const explicit = import.meta.env.VITE_API_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, '');
+  if (import.meta.env.PROD) return '';
 
   const host = typeof window === 'undefined' ? '' : window.location.hostname;
-  if (!host || host === '') return `http://localhost:${API_PORT}`;
+  if (!host) return `http://localhost:${API_PORT}`;
   const bracketed = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
   return `http://${bracketed}:${API_PORT}`;
 }
